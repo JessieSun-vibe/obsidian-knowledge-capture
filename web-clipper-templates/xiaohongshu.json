@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "0.1.0",
+  "name": "小红书｜知识收件箱",
+  "behavior": "create",
+  "noteNameFormat": "{{selector:#detail-title|safe_name}}",
+  "path": "Clippings",
+  "context": "{{selectorHtml:#noteContainer|markdown}}",
+  "properties": [
+    {
+      "name": "type",
+      "value": "social-material",
+      "type": "text"
+    },
+    {
+      "name": "platform",
+      "value": "小红书",
+      "type": "text"
+    },
+    {
+      "name": "source",
+      "value": "{{url}}",
+      "type": "text"
+    },
+    {
+      "name": "author",
+      "value": "{{selector:#noteContainer > .author .username}}",
+      "type": "text"
+    },
+    {
+      "name": "published",
+      "value": "{{selector:#noteContainer .note-content .date}}",
+      "type": "text"
+    },
+    {
+      "name": "created",
+      "value": "{{date|date:\"YYYY-MM-DD\"}}",
+      "type": "date"
+    },
+    {
+      "name": "account",
+      "value": "待判断",
+      "type": "text"
+    },
+    {
+      "name": "process-status",
+      "value": "待处理",
+      "type": "text"
+    },
+    {
+      "name": "tags",
+      "value": "clippings, 小红书",
+      "type": "multitext"
+    }
+  ],
+  "triggers": [
+    "https://www.xiaohongshu.com/explore/",
+    "https://www.xiaohongshu.com/discovery/item/"
+  ],
+  "noteContentFormat": "# {{selector:#detail-title}}\n\n## 一、原始信息\n\n> 作者：{{selector:#noteContainer > .author .username}}\n> 发布：{{selector:#noteContainer .note-content .date}}\n> 来源：[查看原文]({{url}})\n\n## 二、原始内容\n\n### 2.1 作者正文\n\n{{selectorHtml:#detail-desc|markdown}}\n\n### 2.2 原始图片 / 视频\n\n{{selectorHtml:#noteContainer .media-container|markdown}}\n\n### 2.3 原始评论\n\n{{selectorHtml:#noteContainer .comments-container|markdown}}\n\n## 三、我的收藏理由\n\n\n## 四、AI 处理区\n\n> [!todo] 等待知识沉淀 Skill 处理。\n"
+}

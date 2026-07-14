@@ -1,0 +1,21 @@
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+
+# Do not publish personal vault content.
+Clippings/
+06 - Sources/.automation/
+06 - Sources/素材/
+06 - Sources/assets/
+06 - Sources/Knowledge/
+
+# Local media / transcripts / logs.
+*.mp4
+*.mov
+*.m4a
+*.wav
+*.webm
+*.log
+*.jsonl
+

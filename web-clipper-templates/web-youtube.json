@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "0.1.0",
+  "name": "通用网页｜知识收件箱",
+  "behavior": "create",
+  "noteNameFormat": "{{title|safe_name}}",
+  "path": "Clippings",
+  "context": "{{content}}",
+  "properties": [
+    {
+      "name": "type",
+      "value": "web-material",
+      "type": "text"
+    },
+    {
+      "name": "platform",
+      "value": "{{site}}",
+      "type": "text"
+    },
+    {
+      "name": "title",
+      "value": "{{title}}",
+      "type": "text"
+    },
+    {
+      "name": "source",
+      "value": "{{url}}",
+      "type": "text"
+    },
+    {
+      "name": "author",
+      "value": "{{author}}",
+      "type": "text"
+    },
+    {
+      "name": "published",
+      "value": "{{published}}",
+      "type": "date"
+    },
+    {
+      "name": "created",
+      "value": "{{date|date:\"YYYY-MM-DD\"}}",
+      "type": "date"
+    },
+    {
+      "name": "description",
+      "value": "{{description}}",
+      "type": "text"
+    },
+    {
+      "name": "account",
+      "value": "待判断",
+      "type": "text"
+    },
+    {
+      "name": "process-status",
+      "value": "待处理",
+      "type": "text"
+    },
+    {
+      "name": "tags",
+      "value": "clippings, 通用网页",
+      "type": "multitext"
+    }
+  ],
+  "triggers": [],
+  "noteContentFormat": "# {{title}}\n\n## 一、原始信息\n\n### 1.1 来源\n\n- 来源：[查看原文]({{url}})\n- 作者：{{author}}\n- 发布：{{published}}\n- 保存：{{date|date:\"YYYY-MM-DD\"}}\n\n### 1.2 简介\n\n{{description}}\n\n## 二、正文内容\n\n### 2.1 正文\n\n{{content}}\n\n## 三、我的记录\n\n### 3.1 收藏理由\n\n\n### 3.2 可用灵感\n\n\n### 3.3 后续行动\n\n"
+}

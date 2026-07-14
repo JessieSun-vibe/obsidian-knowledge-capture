@@ -1,0 +1,6 @@
+PyYAML
+yt-dlp
+imageio-ffmpeg
+mlx-whisper; platform_system == "Darwin"
+youtube-transcript-api
+

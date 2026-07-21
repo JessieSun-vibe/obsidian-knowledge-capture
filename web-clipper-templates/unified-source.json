@@ -1,0 +1,82 @@
+{
+  "schemaVersion": "0.1.0",
+  "name": "统一来源｜知识收件箱",
+  "behavior": "create",
+  "noteNameFormat": "{% if selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"] %}{{selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"]|safe_name}}{% else %}{{title|safe_name}}{% endif %}",
+  "path": "Clippings",
+  "context": "{% if selector:[data-e2e=\"feed-active-video\"] %}{{selectorHtml:[data-e2e=\"feed-active-video\"]|markdown}}{% elseif selector:#noteContainer %}{{selectorHtml:#detail-desc|markdown}}\n\n{{selectorHtml:#noteContainer .media-container|markdown}}{% else %}{{content}}{% endif %}",
+  "properties": [
+    {
+      "name": "type",
+      "value": "source-material",
+      "type": "text"
+    },
+    {
+      "name": "platform",
+      "value": "auto",
+      "type": "text"
+    },
+    {
+      "name": "title",
+      "value": "{% if selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"] %}{{selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"]}}{% else %}{{title}}{% endif %}",
+      "type": "text"
+    },
+    {
+      "name": "source",
+      "value": "{% if meta:name:obsidian-knowledge-canonical-url %}{{meta:name:obsidian-knowledge-canonical-url}}{% else %}{{url}}{% endif %}",
+      "type": "text"
+    },
+    {
+      "name": "media-url",
+      "value": "{% if meta:name:obsidian-knowledge-media-url %}{{meta:name:obsidian-knowledge-media-url}}{% elseif selector:video source?src %}{{selector:video source?src}}{% else %}{{selector:video?src}}{% endif %}",
+      "type": "text"
+    },
+    {
+      "name": "media-status",
+      "value": "{{meta:name:obsidian-knowledge-media-status}}",
+      "type": "text"
+    },
+    {
+      "name": "author",
+      "value": "{% if selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"feed-video-nickname\"] %}{{selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"feed-video-nickname\"]}}{% else %}{{author}}{% endif %}",
+      "type": "text"
+    },
+    {
+      "name": "published",
+      "value": "{{published}}",
+      "type": "text"
+    },
+    {
+      "name": "created",
+      "value": "{{date|date:\"YYYY-MM-DD\"}}",
+      "type": "date"
+    },
+    {
+      "name": "content-type",
+      "value": "auto",
+      "type": "text"
+    },
+    {
+      "name": "process-status",
+      "value": "待处理",
+      "type": "text"
+    },
+    {
+      "name": "capture-status",
+      "value": "raw",
+      "type": "text"
+    },
+    {
+      "name": "capture-method",
+      "value": "web-clipper",
+      "type": "text"
+    },
+    {
+      "name": "tags",
+      "value": "clippings, source-material",
+      "type": "multitext"
+    }
+  ],
+  "triggers": [],
+  "noteContentFormat": "# {% if selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"] %}{{selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"]}}{% else %}{{title}}{% endif %}\n\n## 一、原始信息\n\n- 来源：[查看原文]({{url}})\n- 作者：{% if selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"feed-video-nickname\"] %}{{selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"feed-video-nickname\"]}}{% else %}{{author}}{% endif %}\n- 发布：{{published}}\n- 保存：{{date|date:\"YYYY-MM-DD\"}}\n- 网站：{{site}}\n\n## 二、页面简介\n\n{% if selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"] %}当前抖音视频：{{selector:[data-e2e=\"feed-active-video\"] [data-e2e=\"video-desc\"]}}{% else %}{{description}}{% endif %}\n\n## 三、原始内容\n\n{% if selector:[data-e2e=\"feed-active-video\"] %}{{selectorHtml:[data-e2e=\"feed-active-video\"]|markdown}}{% elseif selector:#noteContainer %}{{selectorHtml:#detail-desc|markdown}}{% else %}{{content}}{% endif %}\n\n## 四、平台补充内容\n\n### 4.1 小红书作者正文\n\n{{selectorHtml:#detail-desc|markdown}}\n\n### 4.2 小红书图片 / 视频\n\n{{selectorHtml:#noteContainer .media-container|markdown}}\n\n## 五、我的记录\n\n### 5.1 收藏理由\n\n\n### 5.2 可用灵感\n\n\n### 5.3 后续行动\n\n"
+}

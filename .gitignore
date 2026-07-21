@@ -19,3 +19,5 @@ Clippings/
 *.log
 *.jsonl
 
+# Personal launch-post artwork is not part of the distributable package.
+content/xhs-post-images/

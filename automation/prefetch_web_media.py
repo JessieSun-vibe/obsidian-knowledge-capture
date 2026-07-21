@@ -16,6 +16,20 @@ from urllib.parse import parse_qs, urlsplit
 VAULT = Path(os.environ.get("OBSIDIAN_VAULT", Path.cwd())).expanduser().resolve()
 CODEX_HOME = Path(os.environ.get("CODEX_HOME", Path.home() / ".codex")).expanduser()
 VIDEO_SCRIPT = CODEX_HOME / "skills" / "xhs-knowledge-capture" / "scripts" / "download_transcribe_video.py"
+SOURCES_MARKER = ".obsidian-knowledge-sources"
+
+
+def discover_sources_root(vault: Path) -> Path:
+    override = os.environ.get("OBSIDIAN_KNOWLEDGE_SOURCES", "").strip("/")
+    if override:
+        return vault / override
+    markers = list(vault.glob(f"*/{SOURCES_MARKER}"))
+    if len(markers) == 1:
+        return markers[0].parent
+    return vault / "06 - Sources"
+
+
+SOURCES_ROOT = discover_sources_root(VAULT)
 
 
 def frontmatter_value(text: str, key: str) -> str | None:
@@ -35,6 +49,18 @@ def is_youtube(url: str) -> bool:
     return host in {"youtube.com", "www.youtube.com", "m.youtube.com", "youtu.be"}
 
 
+def is_supported_video_url(url: str) -> bool:
+    parsed = urlsplit(url)
+    host = (parsed.hostname or "").lower()
+    path = parsed.path.lower()
+    return (
+        is_youtube(url)
+        or host.endswith("douyin.com")
+        or host.endswith("iesdouyin.com")
+        or (host.endswith("instagram.com") and path.startswith(("/reel/", "/reels/")))
+    )
+
+
 def media_id(url: str) -> str:
     parsed = urlsplit(url)
     host = (parsed.hostname or "").lower()
@@ -47,13 +73,23 @@ def media_id(url: str) -> str:
     return re.sub(r"[^A-Za-z0-9_-]+", "-", value)
 
 
-def has_substantial_body(text: str) -> bool:
-    body = re.sub(r"^---.*?---", "", text, flags=re.S).strip()
-    # Ignore the fixed template scaffolding and the source embed line.
-    body = re.sub(r"!\[\]\(https?://www\.youtube\.com/watch\?v=[^)]+\)", "", body)
-    body = re.sub(r"^#{1,6}\s+.*$", "", body, flags=re.M)
-    body = re.sub(r"^\s*[-*]\s+.*$", "", body, flags=re.M)
-    return len(body.strip()) >= 800
+def normalized_video_url(url: str) -> str:
+    """Convert modal/feed URLs into stable video-detail URLs for yt-dlp."""
+    parsed = urlsplit(url)
+    host = (parsed.hostname or "").lower()
+    if host.endswith("douyin.com"):
+        modal_id = (parse_qs(parsed.query).get("modal_id") or [""])[0]
+        if modal_id.isdigit():
+            return f"https://www.douyin.com/video/{modal_id}"
+    return url
+
+
+def has_explicit_transcript(text: str) -> bool:
+    """Only skip video retrieval for text explicitly captured as a transcript."""
+    return bool(
+        re.search(r"^(?:#{1,6}\s*)?(?:完整)?(?:逐字稿|视频转录|Transcript)\b", text, re.M | re.I)
+        and len(re.sub(r"^---.*?---", "", text, flags=re.S).strip()) >= 800
+    )
 
 
 def fetch_youtube_transcript(video_id: str, output: Path) -> dict | None:
@@ -101,22 +137,23 @@ def main() -> int:
     clip = Path(sys.argv[1]).resolve()
     text = clip.read_text(encoding="utf-8")
     url = source_url(text)
-    if not is_youtube(url):
-        print(json.dumps({"type": "none", "reason": "not a YouTube URL"}, ensure_ascii=False))
+    if not is_supported_video_url(url):
+        print(json.dumps({"type": "none", "reason": "not a supported video URL"}, ensure_ascii=False))
         return 0
-    if has_substantial_body(text):
-        print(json.dumps({"type": "none", "reason": "clipping already has enough body text"}, ensure_ascii=False))
+    if has_explicit_transcript(text):
+        print(json.dumps({"type": "none", "reason": "clipping contains an explicit transcript"}, ensure_ascii=False))
         return 0
 
-    output = VAULT / "06 - Sources" / ".automation" / "media" / media_id(url)
-    transcript_meta = fetch_youtube_transcript(media_id(url), output)
+    download_url = normalized_video_url(url)
+    output = SOURCES_ROOT / ".automation" / "media" / media_id(download_url)
+    transcript_meta = fetch_youtube_transcript(media_id(url), output) if is_youtube(url) else None
     if transcript_meta:
         result = {"type": "transcript", "directory": str(output), "source": url, **transcript_meta}
         print(json.dumps(result, ensure_ascii=False))
         return 0
 
     if not (output / "source.mp4").exists() or not (output / "transcript-raw.txt").exists():
-        command = [sys.executable, str(VIDEO_SCRIPT), str(clip), str(output)]
+        command = [sys.executable, str(VIDEO_SCRIPT), str(clip), str(output), download_url]
         completed = subprocess.run(command, text=True, capture_output=True, timeout=3600)
         if completed.returncode != 0:
             raise RuntimeError((completed.stderr or completed.stdout)[-2000:])

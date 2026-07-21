@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Download a Xiaohongshu video and transcribe it locally with MLX Whisper."""
+"""Download a supported social video and transcribe it locally with MLX Whisper."""
 
 from __future__ import annotations
 
@@ -15,15 +15,31 @@ def frontmatter_value(text: str, key: str) -> str | None:
     return match.group(1).strip() if match else None
 
 
+def chrome_last_used_profile() -> str | None:
+    """Return Chrome's profile directory name without reading cookie values."""
+    state = Path.home() / "Library" / "Application Support" / "Google" / "Chrome" / "Local State"
+    try:
+        data = json.loads(state.read_text(encoding="utf-8"))
+        profile = data.get("profile", {}).get("last_used")
+        return profile if isinstance(profile, str) and profile else None
+    except (OSError, ValueError, TypeError):
+        return None
+
+
 def main() -> int:
-    if len(sys.argv) != 3:
-        print("usage: download_transcribe_video.py CLIP.md OUTPUT_DIR", file=sys.stderr)
+    if len(sys.argv) not in {3, 4}:
+        print("usage: download_transcribe_video.py CLIP.md OUTPUT_DIR [DOWNLOAD_URL]", file=sys.stderr)
         return 2
     clip = Path(sys.argv[1]).resolve()
     output = Path(sys.argv[2]).resolve()
     output.mkdir(parents=True, exist_ok=True)
     text = clip.read_text(encoding="utf-8")
-    url = frontmatter_value(text, "source-original") or frontmatter_value(text, "source")
+    captured_media_url = frontmatter_value(text, "media-url")
+    if captured_media_url and not captured_media_url.startswith(("http://", "https://")):
+        captured_media_url = None
+    url = captured_media_url or (sys.argv[3] if len(sys.argv) == 4 else (
+        frontmatter_value(text, "source-original") or frontmatter_value(text, "source")
+    ))
     if not url:
         raise RuntimeError("missing source URL")
 
@@ -42,10 +58,17 @@ def main() -> int:
     }
     error: Exception | None = None
     info = None
-    for cookies in (False, True):
+    media = output / "source.mp4"
+    if media.exists() and media.stat().st_size > 0:
+        info = {"id": "local-prefetch"}
+    # Reading browser cookies can expose authenticated sessions. Keep it an
+    # explicit opt-in instead of silently probing Chrome after a public fetch.
+    allow_browser_cookies = os.environ.get("OBSIDIAN_KNOWLEDGE_BROWSER_COOKIES") == "1"
+    cookie_modes = (False, True) if allow_browser_cookies else (False,)
+    for cookies in (() if info is not None else cookie_modes):
         opts = dict(common)
         if cookies:
-            opts["cookiesfrombrowser"] = ("chrome", None, None, None)
+            opts["cookiesfrombrowser"] = ("chrome", chrome_last_used_profile(), None, None)
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(url, download=True)
@@ -76,7 +99,6 @@ def main() -> int:
     result = mlx_whisper.transcribe(
         str(media),
         path_or_hf_repo="mlx-community/whisper-large-v3-turbo",
-        language="zh",
         word_timestamps=False,
     )
     transcript = (result.get("text") or "").strip()

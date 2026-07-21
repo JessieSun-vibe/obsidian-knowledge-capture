@@ -19,13 +19,18 @@ source-clip: "[[raw clip name]]" # omit when an unattended watcher deletes the r
 author:
 published:
 collected-at:
+content-type:
+capture-method:
+capture-quality:
+language:
+translation-mode:
 ---
 ```
 
 Save the finished card at:
 
 ```text
-06 - Sources/素材/<primary-folder>/<Title>.md
+06 - Sources/001-input/<primary-folder>/<Title>.md
 ```
 
 `<primary-folder>` is the strongest content theme, not the platform. Use `AI`, `自媒体`, `美食`, `家居`, `投资`, `产品经理`, `职场成长`, `个人成长`, `主账号`, or `待判断`.
@@ -59,9 +64,13 @@ Use these sections in order:
 
 ### 4.2 图片原文（OCR）
 
+Embed retained source images as `![[path/to/image.webp|700]]`. The `700` controls only inline display size; do not resize or recompress the original asset.
+
 ### 4.3 有效评论
 
 ## 五、清理后的口播稿
 ```
 
 Omit empty optional subsections. Do not add `used-in` to frontmatter. Number all subsection headings with their parent section number, such as `2.1`, `3.1`, and `4.1`; if an optional subsection is omitted, keep the remaining subsection numbers stable rather than renumbering concepts. Include `## 五、清理后的口播稿` only for video notes with a verified transcript.
+
+For predominantly English sources, set `language` to both `English` and `中文`, set `translation-mode: bilingual-paired`, and put every substantive English sentence or short semantic paragraph immediately before its Chinese translation.

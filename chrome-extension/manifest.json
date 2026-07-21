@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Obsidian Knowledge Capture · Douyin Bridge",
+  "version": "0.1.0",
+  "description": "Expose the currently visible Douyin video's signed media URL to Obsidian Web Clipper without reading browser cookies.",
+  "content_scripts": [
+    {
+      "matches": ["https://www.douyin.com/*"],
+      "js": ["douyin-core.js", "content.js"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ]
+}

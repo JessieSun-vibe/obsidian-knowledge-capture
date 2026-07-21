@@ -1,4 +1,4 @@
 interface:
   display_name: "小红书知识沉淀"
-  short_description: "清洗小红书剪藏、识别图片并生成可调用的结构化知识卡片"
+  short_description: "清洗小红书图文与视频剪藏并生成结构化 Obsidian 知识卡"
   default_prompt: "Use $xhs-knowledge-capture to process new Xiaohongshu clips into structured knowledge notes."

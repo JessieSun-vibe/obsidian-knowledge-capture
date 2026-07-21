@@ -1,9 +1,9 @@
 {
   "id": "xhs-auto-process",
-  "name": "网页知识自动沉淀",
-  "version": "1.0.0",
+  "name": "统一来源知识自动沉淀",
+  "version": "1.1.0",
   "minAppVersion": "1.5.0",
-  "description": "监听 Clippings，调用 Codex 自动整理小红书、YouTube 和普通网页素材。",
+  "description": "监听 Clippings，自动识别来源并调用 Codex 整理社交平台、视频和网页素材。",
   "author": "Jessie Sun",
   "isDesktopOnly": true
 }

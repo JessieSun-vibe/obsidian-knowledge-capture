@@ -17,13 +17,18 @@ source:
 author:
 published:
 collected-at:
+content-type:
+capture-method:
+capture-quality:
+language:
+translation-mode:
 ---
 ```
 
 Save the finished card at:
 
 ```text
-06 - Sources/素材/<primary-folder>/<Title>.md
+06 - Sources/001-input/<primary-folder>/<Title>.md
 ```
 
 `<primary-folder>` is the strongest content theme, not the platform. Use `AI`, `自媒体`, `美食`, `家居`, `投资`, `产品经理`, `职场成长`, `个人成长`, `主账号`, or `待判断`.
@@ -63,3 +68,14 @@ Use these sections in order:
 ```
 
 Omit empty optional subsections. Keep subsection numbers stable when possible. Include `## 五、清理后的口播稿` only when the source includes a transcript or spoken-video text.
+
+For predominantly English sources, add:
+
+```yaml
+language:
+  - English
+  - 中文
+translation-mode: bilingual-paired
+```
+
+In `## 四、来源内容` and, when present, `## 五、清理后的口播稿`, put each English sentence or short semantic paragraph immediately before its faithful Chinese translation.

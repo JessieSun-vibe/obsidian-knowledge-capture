@@ -7,9 +7,9 @@ Usage:
 This installer copies:
 - Codex skills into ~/.codex/skills
 - Obsidian plugin into <vault>/.obsidian/plugins/xhs-auto-process
-- automation scripts into <vault>/06 - Sources/Automation
-- Web Clipper templates into <vault>/06 - Sources/Templates
-- default empty material folders into <vault>/06 - Sources/素材
+- automation scripts into the marked Sources root's `Automation/`
+- Web Clipper templates into the marked Sources root's `Templates/`
+- default empty material folders into the marked Sources root's `001-input/`
 """
 
 from __future__ import annotations
@@ -21,24 +21,27 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parent
-DEFAULT_FOLDERS = [
-    "AI",
-    "自媒体",
-    "美食",
-    "家居",
-    "投资",
-    "产品经理",
-    "职场成长",
-    "个人成长",
-    "主账号",
-    "待判断",
-]
+OUTPUT_MARKER = ".obsidian-knowledge-output"
+TOPIC_MARKER = ".obsidian-knowledge-topic"
+SOURCES_MARKER = ".obsidian-knowledge-sources"
+DEFAULT_FOLDERS = {
+    "ai": "AI",
+    "creator": "自媒体",
+    "food": "美食",
+    "home": "家居",
+    "investing": "投资",
+    "product": "产品经理",
+    "career": "职场成长",
+    "growth": "个人成长",
+    "main": "主账号",
+    "unclassified": "待判断",
+}
 
 
 def copytree(src: Path, dst: Path) -> None:
-    if dst.exists():
-        shutil.rmtree(dst)
-    shutil.copytree(src, dst)
+    # Upgrade package-owned files in place. Do not delete additional files a
+    # user may have added to the installed skill, plugin, or helper directory.
+    shutil.copytree(src, dst, dirs_exist_ok=True)
 
 
 def copy_files(src_dir: Path, dst_dir: Path) -> None:
@@ -46,6 +49,36 @@ def copy_files(src_dir: Path, dst_dir: Path) -> None:
     for path in src_dir.iterdir():
         if path.is_file():
             shutil.copy2(path, dst_dir / path.name)
+
+
+def discover_sources_root(vault: Path) -> Path:
+    markers = list(vault.glob(f"*/{SOURCES_MARKER}"))
+    if len(markers) == 1:
+        return markers[0].parent
+    return vault / "06 - Sources"
+
+
+def discover_output_root(sources_root: Path) -> Path:
+    markers = list(sources_root.glob(f"*/{OUTPUT_MARKER}"))
+    if len(markers) == 1:
+        return markers[0].parent
+    return sources_root / "001-input"
+
+
+def ensure_topic_folders(output_root: Path) -> None:
+    existing: set[str] = set()
+    if output_root.exists():
+        for marker in output_root.rglob(TOPIC_MARKER):
+            try:
+                existing.add(marker.read_text(encoding="utf-8").strip())
+            except OSError:
+                continue
+    for topic_id, default_name in DEFAULT_FOLDERS.items():
+        if topic_id in existing:
+            continue
+        folder = output_root / default_name
+        folder.mkdir(parents=True, exist_ok=True)
+        (folder / TOPIC_MARKER).write_text(topic_id + "\n", encoding="utf-8")
 
 
 def main() -> int:
@@ -76,13 +109,25 @@ def main() -> int:
     )
 
     # Automation scripts and clipper templates.
-    copy_files(ROOT / "automation", vault / "06 - Sources" / "Automation")
-    copy_files(ROOT / "web-clipper-templates", vault / "06 - Sources" / "Templates")
+    sources_root = discover_sources_root(vault)
+    sources_root.mkdir(parents=True, exist_ok=True)
+    (sources_root / SOURCES_MARKER).write_text(
+        "This marker lets Obsidian Knowledge Capture follow the Sources root when it is renamed.\n",
+        encoding="utf-8",
+    )
+    copy_files(ROOT / "automation", sources_root / "Automation")
+    copy_files(ROOT / "web-clipper-templates", sources_root / "Templates")
+    copytree(ROOT / "chrome-extension", sources_root / "Browser Extension" / "douyin-bridge")
 
     # Default inbox/material folders.
     (vault / "Clippings").mkdir(exist_ok=True)
-    for folder in DEFAULT_FOLDERS:
-        (vault / "06 - Sources" / "素材" / folder).mkdir(parents=True, exist_ok=True)
+    output_root = discover_output_root(sources_root)
+    output_root.mkdir(parents=True, exist_ok=True)
+    (output_root / OUTPUT_MARKER).write_text(
+        "This marker lets Obsidian Knowledge Capture follow the output folder when it is renamed.\n",
+        encoding="utf-8",
+    )
+    ensure_topic_folders(output_root)
 
     print("Installed Obsidian Knowledge Capture.")
     print(f"Vault: {vault}")
@@ -90,12 +135,11 @@ def main() -> int:
     print()
     print("Next steps:")
     print("1. Restart Obsidian.")
-    print("2. Enable community plugin: 网页知识自动沉淀.")
-    print("3. Import Web Clipper templates from your vault: 06 - Sources/Templates/")
+    print("2. Enable community plugin: 统一来源知识自动沉淀.")
+    print(f"3. Import {sources_root.relative_to(vault)}/Templates/unified-source.json in Obsidian Web Clipper.")
     print("4. Install Python dependencies if needed: python3 -m pip install -r requirements.txt")
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
